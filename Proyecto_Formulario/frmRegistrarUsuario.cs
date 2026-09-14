@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
 
 namespace Proyecto_Formulario
 {
@@ -55,13 +56,35 @@ namespace Proyecto_Formulario
             string usuarioFinal = usuarioBase;
 
             int sufijo = 2;
-            while (DatosGlobales.usuarios.Contains(usuarioFinal))
+           while (ExisteUsuarioEnBD(usuarioFinal))
             {
                 usuarioFinal = usuarioBase + "_" + sufijo;
                 sufijo++;
             }
 
             return usuarioFinal;
+        }
+
+        private bool ExisteUsuarioEnBD(string usuario)
+        {
+            string query = "SELECT COUNT(*) FROM Usuarios WHERE Usuario = @Usuario";
+            try
+            {
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Usuario", usuario);
+                        int count = Convert.ToInt32(cmd.ExecuteScalar());
+                        return count > 0;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private string GenerarContrasenaAleatoria()
@@ -117,7 +140,7 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            if (DatosGlobales.dnis.Contains(dni))
+            if (ExisteDniEnBD(dni))
             {
                 lblError.Text = "Ya existe un usuario registrado con ese DNI.";
                 return;
@@ -145,17 +168,39 @@ namespace Proyecto_Formulario
             string nuevoUsuario = GenerarNombreUsuario(nombre, apellido, dni);
             string nuevaContrasena = GenerarContrasenaAleatoria();
             string tipoUsuario = cboTipoUsuario.SelectedItem.ToString();
+            string genero = cboGenero.SelectedItem.ToString();
 
-            DatosGlobales.usuarios.Add(nuevoUsuario);
-            DatosGlobales.contrasenas.Add(nuevaContrasena);
-            DatosGlobales.roles.Add(tipoUsuario);
-            DatosGlobales.primerIngreso.Add(true);
-            DatosGlobales.nombres.Add(nombre);
-            DatosGlobales.apellidos.Add(apellido);
-            DatosGlobales.dnis.Add(dni);
-            DatosGlobales.telefonos.Add(telefono);
-            DatosGlobales.emails.Add(email);
-            DatosGlobales.generos.Add(cboGenero.SelectedItem.ToString());
+            string insertQuery = @"INSERT INTO Usuarios 
+                (Usuario, Contrasena, Rol, PrimerIngreso, Nombre, Apellido, Dni, Telefono, Email, Genero) 
+                VALUES 
+                (@Usuario, @Contrasena, @Rol, 1, @Nombre, @Apellido, @Dni, @Telefono, @Email, @Genero)";
+
+            try
+            {
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(insertQuery, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Usuario", nuevoUsuario);
+                        cmd.Parameters.AddWithValue("@Contrasena", nuevaContrasena);
+                        cmd.Parameters.AddWithValue("@Rol", tipoUsuario);
+                        cmd.Parameters.AddWithValue("@Nombre", nombre);
+                        cmd.Parameters.AddWithValue("@Apellido", apellido);
+                        cmd.Parameters.AddWithValue("@Dni", dni);
+                        cmd.Parameters.AddWithValue("@Telefono", telefono);
+                        cmd.Parameters.AddWithValue("@Email", email);
+                        cmd.Parameters.AddWithValue("@Genero", genero);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = "Error al registrar en la base de datos: " + ex.Message;
+                return;
+            }
 
             MessageBox.Show(
                 "Se enviaron las credenciales al email " + email + ":\n\n" +
@@ -170,6 +215,30 @@ namespace Proyecto_Formulario
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             LimpiarFormulario();
+        }
+
+
+        // validar DNI duplicado en SQL
+        private bool ExisteDniEnBD(string dni)
+        {
+            string query = "SELECT COUNT(*) FROM Usuarios WHERE Dni = @Dni";
+            try
+            {
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Dni", dni);
+                        int count = Convert.ToInt32(cmd.ExecuteScalar());
+                        return count > 0;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void LimpiarFormulario()

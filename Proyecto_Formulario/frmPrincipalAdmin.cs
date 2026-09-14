@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
 
 namespace Proyecto_Formulario
 {
@@ -32,6 +33,10 @@ namespace Proyecto_Formulario
 
             dgvEquipos.Columns.Clear();
 
+            // Columna oculta para almacenar el IdEquipo de SQL Server
+            dgvEquipos.Columns.Add("colIdEquipo", "ID");
+            dgvEquipos.Columns["colIdEquipo"].Visible = false;
+
             dgvEquipos.Columns.Add("colNombreEquipo", "Equipo");
             dgvEquipos.Columns.Add("colCategoria", "Categoría");
             dgvEquipos.Columns.Add("colCantidadJugadores", "Jugadores");
@@ -55,17 +60,42 @@ namespace Proyecto_Formulario
         {
             dgvEquipos.Rows.Clear();
 
-            for (int i = 0; i < DatosGlobales.equiposNombre.Count; i++)
+            // Cargar los equipos desde SQL Server
+            string query = "SELECT IdEquipo, NombreEquipo, Categoria, CantidadJugadores FROM Equipos";
+
+            int totalEquipos = 0;
+
+            try
             {
-                dgvEquipos.Rows.Add(
-                    DatosGlobales.equiposNombre[i],
-                    DatosGlobales.equiposCategoria[i],
-                    DatosGlobales.equiposCantidadJugadores[i]
-                // la 4ta columna (botón) no necesita valor: UseColumnTextForButtonValue ya la completa
-                );
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conexion))
+                    {
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                totalEquipos++;
+                                dgvEquipos.Rows.Add(
+                                    reader["IdEquipo"],
+                                    reader["NombreEquipo"].ToString() ?? "",
+                                    reader["Categoria"].ToString() ?? "",
+                                    reader["CantidadJugadores"]
+                                // la 5ta columna (botón) no necesita valor: UseColumnTextForButtonValue ya la completa
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblEstado.Text = "Error al cargar equipos de la base de datos: " + ex.Message;
+                return;
             }
 
-            if (DatosGlobales.equiposNombre.Count == 0)
+            if (totalEquipos == 0)
             {
                 lblEstado.Text = "Todavía no hay equipos registrados.";
             }
@@ -74,6 +104,7 @@ namespace Proyecto_Formulario
                 lblEstado.Text = "";
             }
         }
+        
 
         private void dgvEquipos_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -81,7 +112,12 @@ namespace Proyecto_Formulario
             if (e.RowIndex < 0) return;
             if (dgvEquipos.Columns[e.ColumnIndex].Name != "colEliminar") return;
 
-            string nombreEquipo = DatosGlobales.equiposNombre[e.RowIndex];
+            // Obtenemos los datos de la fila seleccionada en el DataGridView
+            var celdaNombre = dgvEquipos.Rows[e.RowIndex].Cells["colNombreEquipo"].Value;
+            var celdaId = dgvEquipos.Rows[e.RowIndex].Cells["colIdEquipo"].Value;
+
+            string nombreEquipo = celdaNombre?.ToString() ?? "";
+            int idEquipo = Convert.ToInt32(celdaId);
 
             DialogResult confirmacion = MessageBox.Show(
                 "¿Eliminar el equipo \"" + nombreEquipo + "\"? Esta acción no se puede deshacer.",
@@ -91,11 +127,26 @@ namespace Proyecto_Formulario
 
             if (confirmacion != DialogResult.Yes) return;
 
-            // Eliminamos de las 4 listas a la vez, respetando el mismo índice
-            DatosGlobales.equiposNombre.RemoveAt(e.RowIndex);
-            DatosGlobales.equiposCategoria.RemoveAt(e.RowIndex);
-            DatosGlobales.equiposCantidadJugadores.RemoveAt(e.RowIndex);
-            DatosGlobales.equiposJugadores.RemoveAt(e.RowIndex);
+            // Eliminar equipo en SQL Server
+            string deleteQuery = "DELETE FROM Equipos WHERE IdEquipo = @IdEquipo";
+
+            try
+            {
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(deleteQuery, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@IdEquipo", idEquipo);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblEstado.Text = "Error al eliminar el equipo: " + ex.Message;
+                return;
+            }
 
             CargarEquipos();
 

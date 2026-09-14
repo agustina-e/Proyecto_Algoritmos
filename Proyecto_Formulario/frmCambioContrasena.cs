@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
 
 namespace Proyecto_Formulario
 {
@@ -36,20 +37,36 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            // DatosGlobales.usuarios es una List<string>, usar IndexOf de la lista
-            int indice = DatosGlobales.usuarios.IndexOf(DatosGlobales.usuarioActual);
-            if (indice < 0)
+            string updateQuery = "UPDATE Usuarios SET Contrasena = @Contrasena, PrimerIngreso = 0 WHERE Usuario = @Usuario";
+            try
             {
-                lblError.Text = "Usuario no encontrado.";
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Contrasena", txtNuevaContrasena.Text);
+                        cmd.Parameters.AddWithValue("@Usuario", DatosGlobales.usuarioActual);
+                        int filas = cmd.ExecuteNonQuery();
+                        if (filas == 0)
+                        {
+                            lblError.Text = "Usuario no encontrado.";
+                            return;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = "Error en la base de datos: " + ex.Message;
                 return;
             }
 
-            DatosGlobales.contrasenas[indice] = txtNuevaContrasena.Text;
-            DatosGlobales.primerIngreso[indice] = false;
             cambioCompletado = true;
 
             // Redirigir
-            if (DatosGlobales.roles[indice] == "Administrador")
+           
+            if (DatosGlobales.rolActual == "Administrador")
                 new frmPrincipalAdmin().Show();
             else
                 new frmPrincipalGeneral().Show();
@@ -114,21 +131,24 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            // Buscamos el índice del usuario actual para actualizar su contraseña
-            int indice = -1;
-            for (int i = 0; i < DatosGlobales.usuarios.Count; i++)
+            string updateQuery = "UPDATE Usuarios SET Contrasena = @Contrasena, PrimerIngreso = 0 WHERE Usuario = @Usuario";
+            try
             {
-                if (DatosGlobales.usuarios[i] == DatosGlobales.usuarioActual)
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
                 {
-                    indice = i;
-                    break;
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Contrasena", nueva);
+                        cmd.Parameters.AddWithValue("@Usuario", DatosGlobales.usuarioActual);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
             }
-
-            if (indice != -1)
+            catch (Exception ex)
             {
-                DatosGlobales.contrasenas[indice] = nueva;
-                DatosGlobales.primerIngreso[indice] = false;
+                lblError.Text = "Error al actualizar la contraseña: " + ex.Message;
+                return;
             }
 
             MessageBox.Show("Contraseña actualizada correctamente.", "Éxito",

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
 
 namespace Proyecto_Formulario
 {
@@ -161,11 +162,58 @@ namespace Proyecto_Formulario
                 jugadoresValidados.Add(new string[] { nombre, apellido, edad.ToString(), dni });
             }
 
-            // Si llegamos hasta acá, todas las filas son válidas: guardamos el equipo
-            DatosGlobales.equiposNombre.Add(txtNombreEquipo.Text.Trim());
-            DatosGlobales.equiposCategoria.Add(cboCategoria.SelectedItem.ToString());
-            DatosGlobales.equiposCantidadJugadores.Add(jugadoresValidados.Count);
-            DatosGlobales.equiposJugadores.Add(jugadoresValidados);
+            string nombreEquipo = txtNombreEquipo.Text.Trim();
+            string categoria = cboCategoria.SelectedItem?.ToString() ?? "";
+            int cantidadJugadores = jugadoresValidados.Count;
+
+            // Insertar el Equipo y obtener su IdEquipo generado
+            string insertEquipoQuery = @"INSERT INTO Equipos (NombreEquipo, Categoria, CantidadJugadores) 
+                                         VALUES (@NombreEquipo, @Categoria, @CantidadJugadores);
+                                         SELECT SCOPE_IDENTITY();";
+
+            int idEquipoNuevo = 0;
+
+            try
+            {
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+
+                    // Insertamos el equipo
+                    using (SqlCommand cmdEquipo = new SqlCommand(insertEquipoQuery, conexion))
+                    {
+                        cmdEquipo.Parameters.AddWithValue("@NombreEquipo", nombreEquipo);
+                        cmdEquipo.Parameters.AddWithValue("@Categoria", categoria);
+                        cmdEquipo.Parameters.AddWithValue("@CantidadJugadores", cantidadJugadores);
+
+                        // ExecuteScalar nos devuelve el ID recién asignado en SQL Server
+                        idEquipoNuevo = Convert.ToInt32(cmdEquipo.ExecuteScalar());
+                    }
+
+                    // 2. Insertar cada Jugador asociado al IdEquipo obtenido
+                    string insertJugadorQuery = @"INSERT INTO Jugadores (Nombre, Apellido, Edad, Dni, IdEquipo) 
+                                                  VALUES (@Nombre, @Apellido, @Edad, @Dni, @IdEquipo)";
+
+                    foreach (var jugador in jugadoresValidados)
+                    {
+                        using (SqlCommand cmdJugador = new SqlCommand(insertJugadorQuery, conexion))
+                        {
+                            cmdJugador.Parameters.AddWithValue("@Nombre", jugador[0]);
+                            cmdJugador.Parameters.AddWithValue("@Apellido", jugador[1]);
+                            cmdJugador.Parameters.AddWithValue("@Edad", int.Parse(jugador[2]));
+                            cmdJugador.Parameters.AddWithValue("@Dni", jugador[3]);
+                            cmdJugador.Parameters.AddWithValue("@IdEquipo", idEquipoNuevo);
+
+                            cmdJugador.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblEstado.Text = "Error al guardar el equipo en la base de datos: " + ex.Message;
+                return;
+            }
 
             MessageBox.Show("Equipo \"" + txtNombreEquipo.Text.Trim() + "\" registrado correctamente con " +
                 jugadoresValidados.Count + " jugadores.", "Éxito",

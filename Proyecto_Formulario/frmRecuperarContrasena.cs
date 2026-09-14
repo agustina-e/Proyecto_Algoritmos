@@ -7,13 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
 
 namespace Proyecto_Formulario
 {
     public partial class frmRecuperarContrasena : Form
     {
-        // Índice del usuario que está recuperando su contraseña (-1 = todavía no validado)
-        private int indiceUsuarioEnRecuperacion = -1;
+        private string usuarioEnRecuperacion = "";
 
         // Controla si ya se validó el código, para no permitir guardar sin ese paso
         private bool codigoValidado = false;
@@ -56,7 +56,7 @@ namespace Proyecto_Formulario
             txtConfirmarContrasena.Enabled = false;
             btnGuardar.Enabled = false;
 
-            indiceUsuarioEnRecuperacion = -1;
+            usuarioEnRecuperacion = "";
             codigoValidado = false;
         }
 
@@ -72,23 +72,35 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            int indice = -1;
-            for (int i = 0; i < DatosGlobales.usuarios.Count; i++)
+            string query = "SELECT COUNT(*) FROM Usuarios WHERE Usuario = @Usuario";
+            bool existeUsuario = false;
+
+            try
             {
-                if (DatosGlobales.usuarios[i] == usuario)
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
                 {
-                    indice = i;
-                    break;
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Usuario", usuario);
+                        int count = Convert.ToInt32(cmd.ExecuteScalar());
+                        existeUsuario = (count > 0);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                lblError.Text = "Error al verificar el usuario: " + ex.Message;
+                return;
+            }
 
-            if (indice == -1)
+            if (!existeUsuario)
             {
                 lblError.Text = "No existe un usuario con ese nombre.";
                 return;
             }
 
-            indiceUsuarioEnRecuperacion = indice;
+            usuarioEnRecuperacion = usuario;
 
             MessageBox.Show("Se envió un código a tu email registrado.", "Código enviado",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -107,7 +119,7 @@ namespace Proyecto_Formulario
             lblError.Text = "";
 
             // Defensa extra: no debería poder llegar acá sin haber pasado el paso 1
-            if (indiceUsuarioEnRecuperacion == -1)
+            if (string.IsNullOrEmpty(usuarioEnRecuperacion))
             {
                 lblError.Text = "Debe validar su usuario primero.";
                 return;
@@ -142,7 +154,7 @@ namespace Proyecto_Formulario
             lblError.Text = "";
 
             // Defensa extra: no debería poder llegar acá sin haber validado el código
-            if (!codigoValidado || indiceUsuarioEnRecuperacion == -1)
+            if (!codigoValidado || string.IsNullOrEmpty(usuarioEnRecuperacion))
             {
                 lblError.Text = "Debe validar el código antes de continuar.";
                 return;
@@ -169,7 +181,27 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            DatosGlobales.contrasenas[indiceUsuarioEnRecuperacion] = nueva;
+            // Actualizar la contraseña en SQL Server
+            string updateQuery = "UPDATE Usuarios SET Contrasena = @Contrasena WHERE Usuario = @Usuario";
+
+            try
+            {
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Contrasena", nueva);
+                        cmd.Parameters.AddWithValue("@Usuario", usuarioEnRecuperacion);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = "Error al actualizar la contraseña: " + ex.Message;
+                return;
+            }
 
             MessageBox.Show("Contraseña actualizada correctamente.", "Éxito",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);

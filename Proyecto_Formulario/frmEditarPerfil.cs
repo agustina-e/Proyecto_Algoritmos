@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient; 
 
 namespace Proyecto_Formulario
 {
@@ -43,25 +44,48 @@ namespace Proyecto_Formulario
             cboTipoUsuario.Items.Clear();
             cboTipoUsuario.Items.AddRange(new string[] { "Administrador", "General" });
 
-            indiceUsuarioActual = DatosGlobales.usuarios.IndexOf(DatosGlobales.usuarioActual);
+            // Precarga de datos desde SQL Server usando usuarioActual
+            string query = "SELECT Nombre, Apellido, Dni, Telefono, Email, Genero, Rol FROM Usuarios WHERE Usuario = @Usuario";
 
-            if (indiceUsuarioActual == -1)
+            try
             {
-                MessageBox.Show("No se pudo identificar al usuario actual.", "Error",
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Usuario", DatosGlobales.usuarioActual);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                lblNombreUsuario.Text = DatosGlobales.usuarioActual;
+                                txtNombre.Text = reader["Nombre"].ToString();
+                                txtApellido.Text = reader["Apellido"].ToString();
+                                txtDni.Text = reader["Dni"].ToString();
+                                txtTelefono.Text = reader["Telefono"].ToString();
+                                txtEmail.Text = reader["Email"].ToString();
+                                cboGenero.SelectedItem = reader["Genero"].ToString();
+                                cboTipoUsuario.SelectedItem = reader["Rol"].ToString();
+                            }
+                            else
+                            {
+                                MessageBox.Show("No se pudo identificar al usuario actual.", "Error",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                this.Close();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al cargar el perfil: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.Close();
                 return;
             }
-
-            // Precarga de datos actuales
-            lblNombreUsuario.Text = DatosGlobales.usuarios[indiceUsuarioActual];
-            txtNombre.Text = DatosGlobales.nombres[indiceUsuarioActual];
-            txtApellido.Text = DatosGlobales.apellidos[indiceUsuarioActual];
-            txtDni.Text = DatosGlobales.dnis[indiceUsuarioActual];
-            txtTelefono.Text = DatosGlobales.telefonos[indiceUsuarioActual];
-            txtEmail.Text = DatosGlobales.emails[indiceUsuarioActual];
-            cboGenero.SelectedItem = DatosGlobales.generos[indiceUsuarioActual];
-            cboTipoUsuario.SelectedItem = DatosGlobales.roles[indiceUsuarioActual];
 
             // DNI y Tipo de usuario nunca son editables sobre el perfio propio (tabla 4.6 de la consigna)
             txtDni.Enabled = false;
@@ -115,12 +139,35 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            // DNI y tipo de usuario no se tocan: quedan igual que estaban
-            DatosGlobales.nombres[indiceUsuarioActual] = nombre;
-            DatosGlobales.apellidos[indiceUsuarioActual] = apellido;
-            DatosGlobales.telefonos[indiceUsuarioActual] = telefono;
-            DatosGlobales.emails[indiceUsuarioActual] = email;
-            DatosGlobales.generos[indiceUsuarioActual] = cboGenero.SelectedItem.ToString();
+            // Actualización de datos personales en SQL Server
+            string genero = cboGenero.SelectedItem.ToString();
+            string updateQuery = @"UPDATE Usuarios 
+                                 SET Nombre = @Nombre, Apellido = @Apellido, Telefono = @Telefono, Email = @Email, Genero = @Genero 
+                                 WHERE Usuario = @Usuario";
+
+            try
+            {
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
+                {
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Nombre", nombre);
+                        cmd.Parameters.AddWithValue("@Apellido", apellido);
+                        cmd.Parameters.AddWithValue("@Telefono", telefono);
+                        cmd.Parameters.AddWithValue("@Email", email);
+                        cmd.Parameters.AddWithValue("@Genero", genero);
+                        cmd.Parameters.AddWithValue("@Usuario", DatosGlobales.usuarioActual);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = "Error al actualizar en la base de datos: " + ex.Message;
+                return;
+            }
 
             MessageBox.Show("Datos actualizados correctamente.", "Éxito",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);

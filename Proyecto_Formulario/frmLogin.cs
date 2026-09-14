@@ -1,3 +1,8 @@
+using System;
+using System.Data;
+using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
+
 namespace Proyecto_Formulario
 {
     public partial class frmLogin : Form
@@ -13,7 +18,6 @@ namespace Proyecto_Formulario
             txtContrasena.PasswordChar = chkMostrarConstrasena.Checked ? '\0' : '*';
         }
 
-
         private void frmLogin_Load(object sender, EventArgs e)
         {
             EstiloUI.AplicarBaseFormulario(this);
@@ -26,6 +30,7 @@ namespace Proyecto_Formulario
             lnkRecuperar.LinkColor = EstiloUI.VerdeAccion;
             lnkRecuperar.Font = EstiloUI.FuenteNormal;
         }
+
         private void txtContrasena_TextChanged(object sender, EventArgs e)
         {
             // Manejar cambios en la caja de contraseña (ej: limpiar mensaje de error)
@@ -61,18 +66,43 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            // Búsqueda del usuario en el array
-            int indice = -1;
-            for (int i = 0; i < DatosGlobales.usuarios.Count; i++)
+            // consultamos a la tabla usuario si existe ese use con esa contraseña
+            string query = "SELECT Rol, PrimerIngreso FROM Usuarios WHERE Usuario = @Usuario AND Contrasena = @Contrasena";
+
+            string rolEncontrado = "";
+            bool primerIngresoEncontrado = false;
+            bool usuarioExiste = false;
+
+            try
             {
-                if (DatosGlobales.usuarios[i] == usuario)
+                using (SqlConnection conexion = Conexion.ObtenerConexion())
                 {
-                    indice = i;
-                    break;
+                    conexion.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@Usuario", usuario);
+                        cmd.Parameters.AddWithValue("@Contrasena", contrasena);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                usuarioExiste = true;
+                                rolEncontrado = reader["Rol"]?.ToString() ?? string.Empty;
+                                primerIngresoEncontrado = Convert.ToBoolean(reader["PrimerIngreso"]);
+                            }
+                        }
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                lblError.Text = "Error al conectar con la base de datos: " + ex.Message;
+                return;
+            }
 
-            if (indice == -1 || DatosGlobales.contrasenas[indice] != contrasena)
+            // Validación de credenciales
+            if (!usuarioExiste)
             {
                 lblError.Text = "Usuario o contraseña incorrectos.";
                 return;
@@ -80,10 +110,10 @@ namespace Proyecto_Formulario
 
             // Guardamos quién inició sesión, para usarlo en otros formularios
             DatosGlobales.usuarioActual = usuario;
-            DatosGlobales.rolActual = DatosGlobales.roles[indice];
+            DatosGlobales.rolActual = rolEncontrado;
 
             // Redirección según corresponda
-            if (DatosGlobales.primerIngreso[indice])
+            if (primerIngresoEncontrado)
             {
                 frmCambioContrasena frm = new frmCambioContrasena();
                 frm.Show();
@@ -109,6 +139,5 @@ namespace Proyecto_Formulario
             frm.Show();
             this.Hide();
         }
-
     }
 }
