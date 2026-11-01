@@ -56,7 +56,7 @@ namespace Proyecto_Formulario
             string usuarioFinal = usuarioBase;
 
             int sufijo = 2;
-           while (ExisteUsuarioEnBD(usuarioFinal))
+            while (ExisteUsuarioEnBD(usuarioFinal))
             {
                 usuarioFinal = usuarioBase + "_" + sufijo;
                 sufijo++;
@@ -259,6 +259,11 @@ namespace Proyecto_Formulario
             frmPrincipalAdmin frm = new frmPrincipalAdmin();
             frm.Show();
             this.Close();
+        }
+
+        private void txtNombre_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
