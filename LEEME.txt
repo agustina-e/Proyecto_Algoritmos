@@ -1,0 +1,39 @@
+===================================================
+PROYECTO: Sistema de Gestión de Torneos 
+===================================================
+
+REQUISITOS PREVIOS:
+- Microsoft Visual Studio 2022 (.NET Framework C# WinForms)
+- Microsoft SQL Server 
+
+---------------------------------------------------
+PASOS PARA EJECUTAR EL PROYECTO Y LA BASE DE DATOS:
+---------------------------------------------------
+
+1. CREACIÓN DE LA BASE DE DATOS Y DATOS DE PRUEBA:
+   - Abrir SQL Server Management Studio.
+   - Abrir el archivo "BD_Proyecto.sql" incluido en la raíz de este proyecto.
+   - Ejecutar todo el script (F5). Esto creará la base de datos "BD_Proyecto", 
+     sus tablas (Equipos, Jugadores, Usuarios) y los datos de prueba predeterminados.
+
+2. CONFIGURACIÓN DE LA CADENA DE CONEXIÓN:
+   - Abrir la solución en Visual Studio.
+   - En la clase "Conexion.cs", la cadena de conexión viene configurada como:
+     Server=CYNTHIA\SQLEXPRESS; Database=BD_Proyecto; Integrated Security=True; TrustServerCertificate=True;
+   - Como su instancia local de SQL Server tiene un nombre diferente, por favor 
+     ajuste únicamente el parámetro "Server" en dicho archivo por el nombre de su servidor 
+     (por ejemplo: Server=.\SQLEXPRESS o Server=localhost).
+   - Ajustar el parámetro "Server" con el nombre de su instancia local de SQL Server si es necesario.
+
+3. DATOS DE INGRESO (USUARIOS DE PRUEBA):
+   - Usuario: admin001
+   - Contraseña: admin123
+   - Rol: Admin
+
+-----------------------------------------------------
+INTEGRANTES:
+- Cynthia Aguero
+- Agustina Espinoza
+- Zoe Avellaneda
+- Luna Delgado
+=====================================================

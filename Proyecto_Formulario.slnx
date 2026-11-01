@@ -1,3 +1,6 @@
 <Solution>
+  <Folder Name="/Elementos de la solución/">
+    <File Path="LEEME.txt" />
+  </Folder>
   <Project Path="Proyecto_Formulario/Proyecto_Formulario.csproj" />
 </Solution>
