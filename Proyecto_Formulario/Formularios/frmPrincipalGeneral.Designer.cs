@@ -40,9 +40,8 @@
             cboCantidadJugadores = new ComboBox();
             btnInscribirme = new Button();
             lblEstado = new Label();
-            dgvJugadores = new DataGridView();
             btnGuardarEquipo = new Button();
-            ((System.ComponentModel.ISupportInitialize)dgvJugadores).BeginInit();
+            flpJugadores = new FlowLayoutPanel();
             SuspendLayout();
             // 
             // lblBienvenida
@@ -143,18 +142,6 @@
             lblEstado.Size = new Size(0, 15);
             lblEstado.TabIndex = 10;
             // 
-            // dgvJugadores
-            // 
-            dgvJugadores.AllowUserToAddRows = false;
-            dgvJugadores.AllowUserToDeleteRows = false;
-            dgvJugadores.AllowUserToResizeColumns = false;
-            dgvJugadores.AllowUserToResizeRows = false;
-            dgvJugadores.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvJugadores.Location = new Point(49, 279);
-            dgvJugadores.Name = "dgvJugadores";
-            dgvJugadores.Size = new Size(569, 150);
-            dgvJugadores.TabIndex = 11;
-            // 
             // btnGuardarEquipo
             // 
             btnGuardarEquipo.Location = new Point(636, 406);
@@ -165,13 +152,25 @@
             btnGuardarEquipo.UseVisualStyleBackColor = true;
             btnGuardarEquipo.Click += btnGuardarEquipo_Click;
             // 
+            // flpJugadores
+            // 
+            flpJugadores.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            flpJugadores.AutoScroll = true;
+            flpJugadores.BorderStyle = BorderStyle.FixedSingle;
+            flpJugadores.FlowDirection = FlowDirection.TopDown;
+            flpJugadores.Location = new Point(52, 277);
+            flpJugadores.Name = "flpJugadores";
+            flpJugadores.Size = new Size(726, 108);
+            flpJugadores.TabIndex = 13;
+            flpJugadores.WrapContents = false;
+            // 
             // frmPrincipalGeneral
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(flpJugadores);
             Controls.Add(btnGuardarEquipo);
-            Controls.Add(dgvJugadores);
             Controls.Add(lblEstado);
             Controls.Add(btnInscribirme);
             Controls.Add(cboCantidadJugadores);
@@ -187,7 +186,6 @@
             Name = "frmPrincipalGeneral";
             Text = "Torneos Liga - Usuario";
             Load += frmPrincipalGeneral_Load;
-            ((System.ComponentModel.ISupportInitialize)dgvJugadores).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -205,7 +203,7 @@
         private ComboBox cboCantidadJugadores;
         private Button btnInscribirme;
         private Label lblEstado;
-        private DataGridView dgvJugadores;
         private Button btnGuardarEquipo;
+        private FlowLayoutPanel flpJugadores;
     }
 }

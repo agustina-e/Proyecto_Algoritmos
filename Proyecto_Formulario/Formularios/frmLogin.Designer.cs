@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            Label lblUsuario;
-            Label lblContrasena;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmLogin));
+            lblUsuario = new Label();
+            lblContrasena = new Label();
             lblTitulo = new Label();
             txtUsuario = new TextBox();
             txtContrasena = new TextBox();
@@ -38,62 +38,73 @@
             btnIniciarSesion = new Button();
             lnkRecuperar = new LinkLabel();
             lblError = new Label();
-            lblUsuario = new Label();
-            lblContrasena = new Label();
             SuspendLayout();
             // 
             // lblUsuario
             // 
             lblUsuario.AutoSize = true;
             lblUsuario.FlatStyle = FlatStyle.Flat;
-            lblUsuario.Location = new Point(154, 97);
+            lblUsuario.Font = new Font("Segoe UI", 13F);
+            lblUsuario.Location = new Point(130, 97);
             lblUsuario.Name = "lblUsuario";
-            lblUsuario.Size = new Size(47, 15);
+            lblUsuario.Size = new Size(72, 25);
             lblUsuario.TabIndex = 1;
             lblUsuario.Text = "Usuario";
+            lblUsuario.TextAlign = ContentAlignment.MiddleRight;
             // 
             // lblContrasena
             // 
             lblContrasena.AutoSize = true;
-            lblContrasena.Location = new Point(154, 183);
+            lblContrasena.Font = new Font("Segoe UI", 13F);
+            lblContrasena.Location = new Point(130, 180);
             lblContrasena.Name = "lblContrasena";
-            lblContrasena.Size = new Size(67, 15);
+            lblContrasena.Size = new Size(101, 25);
             lblContrasena.TabIndex = 3;
             lblContrasena.Text = "Contraseña";
+            lblContrasena.TextAlign = ContentAlignment.MiddleRight;
             // 
             // lblTitulo
             // 
             lblTitulo.Dock = DockStyle.Top;
+            lblTitulo.Font = new Font("Segoe UI Black", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblTitulo.Location = new Point(0, 0);
             lblTitulo.Name = "lblTitulo";
-            lblTitulo.Size = new Size(800, 15);
+            lblTitulo.Size = new Size(984, 75);
             lblTitulo.TabIndex = 0;
             lblTitulo.Text = "Torneos Liga";
+            lblTitulo.TextAlign = ContentAlignment.MiddleLeft;
             lblTitulo.Click += lblTitulo_Click;
             // 
             // txtUsuario
             // 
-            txtUsuario.Location = new Point(265, 94);
+            txtUsuario.Anchor = AnchorStyles.Top;
+            txtUsuario.Font = new Font("Segoe UI", 24F);
+            txtUsuario.Location = new Point(231, 107);
+            txtUsuario.MaxLength = 50;
             txtUsuario.Name = "txtUsuario";
-            txtUsuario.Size = new Size(327, 23);
+            txtUsuario.Size = new Size(480, 50);
             txtUsuario.TabIndex = 2;
             txtUsuario.TextChanged += txtUsuario_TextChanged;
             // 
             // txtContrasena
             // 
-            txtContrasena.Location = new Point(265, 180);
+            txtContrasena.Anchor = AnchorStyles.Top;
+            txtContrasena.Font = new Font("Segoe UI", 24F);
+            txtContrasena.Location = new Point(231, 182);
+            txtContrasena.MaxLength = 100;
             txtContrasena.Name = "txtContrasena";
             txtContrasena.PasswordChar = '*';
-            txtContrasena.Size = new Size(328, 23);
+            txtContrasena.Size = new Size(480, 50);
             txtContrasena.TabIndex = 4;
             txtContrasena.TextChanged += txtContrasena_TextChanged;
             // 
             // chkMostrarConstrasena
             // 
             chkMostrarConstrasena.AutoSize = true;
-            chkMostrarConstrasena.Location = new Point(599, 182);
+            chkMostrarConstrasena.Font = new Font("Segoe UI", 12F);
+            chkMostrarConstrasena.Location = new Point(734, 201);
             chkMostrarConstrasena.Name = "chkMostrarConstrasena";
-            chkMostrarConstrasena.Size = new Size(128, 19);
+            chkMostrarConstrasena.Size = new Size(164, 25);
             chkMostrarConstrasena.TabIndex = 5;
             chkMostrarConstrasena.Text = "Mostrar contraseña";
             chkMostrarConstrasena.UseVisualStyleBackColor = true;
@@ -101,9 +112,11 @@
             // 
             // btnIniciarSesion
             // 
-            btnIniciarSesion.Location = new Point(299, 267);
+            btnIniciarSesion.Anchor = AnchorStyles.Top;
+            btnIniciarSesion.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            btnIniciarSesion.Location = new Point(287, 262);
             btnIniciarSesion.Name = "btnIniciarSesion";
-            btnIniciarSesion.Size = new Size(254, 23);
+            btnIniciarSesion.Size = new Size(360, 55);
             btnIniciarSesion.TabIndex = 6;
             btnIniciarSesion.Text = "Iniciar Sesión";
             btnIniciarSesion.UseVisualStyleBackColor = true;
@@ -112,9 +125,11 @@
             // lnkRecuperar
             // 
             lnkRecuperar.AutoSize = true;
-            lnkRecuperar.Location = new Point(354, 309);
+            lnkRecuperar.Font = new Font("Segoe UI", 12F);
+            lnkRecuperar.LinkColor = Color.Green;
+            lnkRecuperar.Location = new Point(314, 333);
             lnkRecuperar.Name = "lnkRecuperar";
-            lnkRecuperar.Size = new Size(141, 15);
+            lnkRecuperar.Size = new Size(187, 21);
             lnkRecuperar.TabIndex = 7;
             lnkRecuperar.TabStop = true;
             lnkRecuperar.Text = "¿Olvidaste tu contraseña?";
@@ -122,19 +137,21 @@
             // 
             // lblError
             // 
-            lblError.AutoSize = true;
-            lblError.ForeColor = Color.Red;
-            lblError.Location = new Point(439, 231);
+            lblError.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblError.ForeColor = Color.DarkRed;
+            lblError.Location = new Point(518, 375);
             lblError.Name = "lblError";
-            lblError.Size = new Size(0, 15);
+            lblError.Size = new Size(500, 30);
             lblError.TabIndex = 8;
+            lblError.TextAlign = ContentAlignment.MiddleCenter;
+            lblError.Click += lblError_Click;
             // 
             // frmLogin
             // 
             AcceptButton = btnIniciarSesion;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(984, 611);
             Controls.Add(lblError);
             Controls.Add(lnkRecuperar);
             Controls.Add(btnIniciarSesion);
@@ -145,7 +162,9 @@
             Controls.Add(lblUsuario);
             Controls.Add(lblTitulo);
             Icon = (Icon)resources.GetObject("$this.Icon");
+            MinimumSize = new Size(341, 188);
             Name = "frmLogin";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Torneos Liga - Inicio";
             Load += frmLogin_Load;
             ResumeLayout(false);

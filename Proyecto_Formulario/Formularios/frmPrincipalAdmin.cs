@@ -13,11 +13,15 @@ namespace Proyecto_Formulario
 {
     public partial class frmPrincipalAdmin : Form
     {
+        #region Inicialización del panel de administración
+
+        // Inicializar los controles del panel de administración
         public frmPrincipalAdmin()
         {
             InitializeComponent();
         }
 
+        // Configurar la interfaz y preparar la grilla de equipos
         private void frmPrincipalAdmin_Load(object sender, EventArgs e)
         {
             EstiloUI.AplicarBaseFormulario(this);
@@ -33,7 +37,7 @@ namespace Proyecto_Formulario
 
             dgvEquipos.Columns.Clear();
 
-            // Columna oculta para almacenar el IdEquipo de SQL Server
+            // Crear una columna oculta para almacenar el IdEquipo de SQL Server
             dgvEquipos.Columns.Add("colIdEquipo", "ID");
             dgvEquipos.Columns["colIdEquipo"].Visible = false;
 
@@ -45,17 +49,24 @@ namespace Proyecto_Formulario
             colEliminar.Name = "colEliminar";
             colEliminar.HeaderText = "";
             colEliminar.Text = "Eliminar";
-            colEliminar.UseColumnTextForButtonValue = true; // todos los botones muestran "Eliminar"
+            colEliminar.UseColumnTextForButtonValue = true; // Mostrar el texto "Eliminar" en todos los botones
             dgvEquipos.Columns.Add(colEliminar);
 
-            // Las columnas de datos no se editan a mano; solo el botón es interactivo
+            // Impedir la edición manual de los datos y habilitar solamente el botón
             dgvEquipos.Columns["colNombreEquipo"].ReadOnly = true;
             dgvEquipos.Columns["colCategoria"].ReadOnly = true;
             dgvEquipos.Columns["colCantidadJugadores"].ReadOnly = true;
+            dgvEquipos.AllowUserToAddRows = false;
+            dgvEquipos.AllowUserToDeleteRows = false;
 
             CargarEquipos();
         }
 
+        #endregion
+
+        #region Consulta y administración de equipos
+
+        // Consultar los equipos y mostrarlos en la grilla
         private void CargarEquipos()
         {
             dgvEquipos.Rows.Clear();
@@ -82,7 +93,7 @@ namespace Proyecto_Formulario
                                     reader["NombreEquipo"].ToString() ?? "",
                                     reader["Categoria"].ToString() ?? "",
                                     reader["CantidadJugadores"]
-                                // la 5ta columna (botón) no necesita valor: UseColumnTextForButtonValue ya la completa
+                                // Dejar que UseColumnTextForButtonValue complete el texto del botón
                                 );
                             }
                         }
@@ -106,13 +117,14 @@ namespace Proyecto_Formulario
         }
         
 
+        // Confirmar y eliminar el equipo seleccionado
         private void dgvEquipos_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            // Ignoramos clics en encabezados (RowIndex = -1) o en columnas que no son el botón
+            // Ignorar los clics en encabezados y en columnas que no sean el botón
             if (e.RowIndex < 0) return;
             if (dgvEquipos.Columns[e.ColumnIndex].Name != "colEliminar") return;
 
-            // Obtenemos los datos de la fila seleccionada en el DataGridView
+            // Obtener los datos de la fila seleccionada en el DataGridView
             var celdaNombre = dgvEquipos.Rows[e.RowIndex].Cells["colNombreEquipo"].Value;
             var celdaId = dgvEquipos.Rows[e.RowIndex].Cells["colIdEquipo"].Value;
 
@@ -127,7 +139,7 @@ namespace Proyecto_Formulario
 
             if (confirmacion != DialogResult.Yes) return;
 
-            // Eliminar equipo en SQL Server
+            // Eliminar el equipo seleccionado en SQL Server
             string deleteQuery = "DELETE FROM Equipos WHERE IdEquipo = @IdEquipo";
 
             try
@@ -154,28 +166,37 @@ namespace Proyecto_Formulario
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        #endregion
+
+        #region Navegación del administrador
+
+        // Cerrar la sesión y volver al formulario de inicio
         private void btnCerrarSesion_Click(object sender, EventArgs e)
         {
-            DatosGlobales.usuarioActual = "";
-            DatosGlobales.rolActual = "";
-
-            frmLogin frm = new frmLogin();
-            frm.Show();
+            Program.VolverAlLogin();
             this.Close();
         }
 
+        // Abrir el formulario de edición del perfil
         private void btnEditarPerfil_Click(object sender, EventArgs e)
         {
             frmEditarPerfil frm = new frmEditarPerfil();
-            frm.Show();
+
+            Program.MostrarFormulario(frm);
+
             this.Close();
         }
 
+        // Abrir el formulario de registro de usuarios
         private void btnRegistrarUsuario_Click(object sender, EventArgs e)
         {
             frmRegistrarUsuario frm = new frmRegistrarUsuario();
-            frm.Show();
+
+            Program.MostrarFormulario(frm);
+
             this.Close();
         }
+        #endregion
+
     }
 }

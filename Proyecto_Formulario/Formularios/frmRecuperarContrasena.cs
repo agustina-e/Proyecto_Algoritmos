@@ -13,19 +13,40 @@ namespace Proyecto_Formulario
 {
     public partial class frmRecuperarContrasena : Form
     {
+        #region Estado del proceso de recuperación
+
+        // Conservar el usuario que solicita recuperar la contraseña
         private string usuarioEnRecuperacion = "";
 
-        // Controla si ya se validó el código, para no permitir guardar sin ese paso
+        // Conservar el formulario desde el que se inició la recuperación
+        private readonly Form? formularioAnterior;
+
+        // Evitar guardar la contraseña sin validar previamente el código
         private bool codigoValidado = false;
 
-        // Código fijo de recuperación (hardcodeado, según la consigna)
+        // Mantener el código fijo de recuperación establecido por la consigna
         private const string CODIGO_RECUPERACION = "1234";
 
-        public frmRecuperarContrasena()
+        #endregion
+
+        #region Inicialización del formulario
+
+        // Inicializar el formulario sin un formulario de origen
+        public frmRecuperarContrasena() : this(null)
         {
-            InitializeComponent();
         }
 
+        // Inicializar el formulario y conservar su origen
+        public frmRecuperarContrasena(Form? formularioAnterior)
+        {
+            InitializeComponent();
+
+            this.formularioAnterior = formularioAnterior;
+
+            this.FormClosing += frmRecuperarContrasena_FormClosing;
+        }
+
+        // Configurar la interfaz y bloquear los pasos pendientes
         private void frmRecuperarContrasena_Load(object sender, EventArgs e)
         {
             EstiloUI.AplicarBaseFormulario(this);
@@ -50,6 +71,8 @@ namespace Proyecto_Formulario
             lblEstadoProceso.Text = "Ingresá tu usuario para comenzar";
             lblError.Text = "";
 
+            EstiloUI.EstilizarEncabezado(lblTitulo);
+
             txtCodigo.Enabled = false;
             btnValidarCodigo.Enabled = false;
             txtNuevaContrasena.Enabled = false;
@@ -60,6 +83,11 @@ namespace Proyecto_Formulario
             codigoValidado = false;
         }
 
+        #endregion
+
+        #region Verificación del usuario
+
+        // Verificar la existencia del usuario e iniciar la recuperación
         private void btnEnviarCodigo_Click(object sender, EventArgs e)
         {
             lblError.Text = "";
@@ -107,18 +135,23 @@ namespace Proyecto_Formulario
 
             lblEstadoProceso.Text = "Código enviado, ingresalo a continuación";
 
-            // Habilitamos el paso siguiente, bloqueamos el usuario para que no lo cambie a mitad de camino
+            // Habilitar el paso siguiente y bloquear el usuario durante el proceso
             txtUsuarioRecuperar.Enabled = false;
             btnEnviarCodigo.Enabled = false;
             txtCodigo.Enabled = true;
             btnValidarCodigo.Enabled = true;
         }
 
+        #endregion
+
+        #region Validación del código
+
+        // Comprobar el código ingresado y habilitar el cambio
         private void btnValidarCodigo_Click(object sender, EventArgs e)
         {
             lblError.Text = "";
 
-            // Defensa extra: no debería poder llegar acá sin haber pasado el paso 1
+            // Evitar continuar sin verificar previamente el usuario
             if (string.IsNullOrEmpty(usuarioEnRecuperacion))
             {
                 lblError.Text = "Debe validar su usuario primero.";
@@ -149,11 +182,16 @@ namespace Proyecto_Formulario
             btnGuardar.Enabled = true;
         }
 
+        #endregion
+
+        #region Actualización de contraseña
+
+        // Validar y actualizar la contraseña recuperada
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             lblError.Text = "";
 
-            // Defensa extra: no debería poder llegar acá sin haber validado el código
+            // Evitar guardar la contraseña sin validar previamente el código
             if (!codigoValidado || string.IsNullOrEmpty(usuarioEnRecuperacion))
             {
                 lblError.Text = "Debe validar el código antes de continuar.";
@@ -181,8 +219,10 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            // Actualizar la contraseña en SQL Server
-            string updateQuery = "UPDATE Usuarios SET Contrasena = @Contrasena WHERE Usuario = @Usuario";
+            // Actualizar la contraseña en SQL Server sin exigir otro cambio por primer ingreso
+            string updateQuery = @"UPDATE Usuarios 
+                       SET Contrasena = @Contrasena, PrimerIngreso = 0
+                       WHERE Usuario = @Usuario";
 
             try
             {
@@ -193,7 +233,13 @@ namespace Proyecto_Formulario
                     {
                         cmd.Parameters.AddWithValue("@Contrasena", nueva);
                         cmd.Parameters.AddWithValue("@Usuario", usuarioEnRecuperacion);
-                        cmd.ExecuteNonQuery();
+                        int filasAfectadas = cmd.ExecuteNonQuery();
+
+                        if (filasAfectadas == 0)
+                        {
+                            lblError.Text = "No se pudo actualizar la contraseña. Verifique el usuario.";
+                            return;
+                        }
                     }
                 }
             }
@@ -206,16 +252,49 @@ namespace Proyecto_Formulario
             MessageBox.Show("Contraseña actualizada correctamente.", "Éxito",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            frmLogin frm = new frmLogin();
-            frm.Show();
+            VolverAlOrigen();
+        }
+
+        #endregion
+
+        #region Navegación del proceso de recuperación
+
+        // Volver al formulario desde el que se inició la recuperación
+        private void btnVolver_Click(object sender, EventArgs e)
+        {
+            VolverAlOrigen();
+        }
+
+        // Recuperar el formulario de origen o volver al login
+        private void VolverAlOrigen()
+        {
+            if (formularioAnterior != null && !formularioAnterior.IsDisposed)
+            {
+                formularioAnterior.Show();
+                formularioAnterior.Activate();
+            }
+            else
+            {
+                Program.VolverAlLogin();
+            }
+
             this.Close();
         }
 
-        private void btnVolver_Click(object sender, EventArgs e)
+        // Mostrar nuevamente el formulario de origen al cerrar la recuperación
+        private void frmRecuperarContrasena_FormClosing(
+            object? sender,
+            FormClosingEventArgs e)
         {
-            frmLogin frm = new frmLogin();
-            frm.Show();
-            this.Close();
+            if (formularioAnterior != null &&
+                !formularioAnterior.IsDisposed &&
+                !formularioAnterior.Visible)
+            {
+                formularioAnterior.Show();
+                formularioAnterior.Activate();
+            }
         }
+        #endregion
+
     }
 }

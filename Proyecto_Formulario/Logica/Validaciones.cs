@@ -9,6 +9,9 @@ namespace Proyecto_Formulario
 
     public static class Validaciones
     {
+        #region Validaciones de entrada
+
+        // Comprobar que el texto contenga solamente letras y espacios
         public static bool SoloLetras(string texto)
         {
             foreach (char c in texto)
@@ -19,6 +22,7 @@ namespace Proyecto_Formulario
             return true;
         }
 
+        // Comprobar que el texto contenga solamente números
         public static bool SoloNumeros(string texto)
         {
             foreach (char c in texto)
@@ -29,19 +33,14 @@ namespace Proyecto_Formulario
             return true;
         }
 
+        // Comprobar que el correo tenga una estructura válida
         public static bool EmailValido(string email)
         {
-            if (!email.Contains("@")) return false;
+            string patron = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
 
-            int posicionArroba = email.IndexOf("@");
-            string parteAntes = email.Substring(0, posicionArroba);
-            string parteDespues = email.Substring(posicionArroba + 1);
-
-            if (string.IsNullOrEmpty(parteAntes)) return false;
-            if (!parteDespues.Contains(".")) return false;
-            if (parteDespues.StartsWith(".") || parteDespues.EndsWith(".")) return false;
-
-            return true;
+            return System.Text.RegularExpressions.Regex.IsMatch(email, patron);
         }
+        #endregion
+
     }
 }

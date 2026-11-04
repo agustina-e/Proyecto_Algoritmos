@@ -1,25 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Compile Update="frmCambioContrasena.cs">
+    <Compile Update="Formularios\frmCambioContrasena.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="frmEditarPerfil.cs">
+    <Compile Update="Formularios\frmEditarPerfil.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="frmLogin.cs">
+    <Compile Update="Formularios\frmLogin.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="frmPrincipalAdmin.cs">
+    <Compile Update="Formularios\frmPrincipalAdmin.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="frmPrincipalGeneral.cs">
+    <Compile Update="Formularios\frmPrincipalGeneral.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="frmRecuperarContrasena.cs">
+    <Compile Update="Formularios\frmRecuperarContrasena.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="frmRegistrarUsuario.cs">
+    <Compile Update="Formularios\frmRegistrarUsuario.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

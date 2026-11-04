@@ -43,6 +43,7 @@
             btnGuardar = new Button();
             lblError = new Label();
             btnVolver = new Button();
+            lblTitulo = new Label();
             SuspendLayout();
             // 
             // lblEstadoProceso
@@ -147,7 +148,7 @@
             // btnGuardar
             // 
             btnGuardar.Enabled = false;
-            btnGuardar.Location = new Point(487, 362);
+            btnGuardar.Location = new Point(578, 371);
             btnGuardar.Name = "btnGuardar";
             btnGuardar.Size = new Size(75, 23);
             btnGuardar.TabIndex = 11;
@@ -159,14 +160,14 @@
             // 
             lblError.AutoSize = true;
             lblError.ForeColor = Color.Red;
-            lblError.Location = new Point(586, 365);
+            lblError.Location = new Point(189, 484);
             lblError.Name = "lblError";
             lblError.Size = new Size(0, 15);
             lblError.TabIndex = 12;
             // 
             // btnVolver
             // 
-            btnVolver.Location = new Point(588, 367);
+            btnVolver.Location = new Point(714, 371);
             btnVolver.Name = "btnVolver";
             btnVolver.Size = new Size(75, 23);
             btnVolver.TabIndex = 13;
@@ -174,11 +175,24 @@
             btnVolver.UseVisualStyleBackColor = true;
             btnVolver.Click += btnVolver_Click;
             // 
+            // lblTitulo
+            // 
+            lblTitulo.BackColor = Color.DarkGreen;
+            lblTitulo.Dock = DockStyle.Top;
+            lblTitulo.ForeColor = Color.White;
+            lblTitulo.Location = new Point(0, 0);
+            lblTitulo.Name = "lblTitulo";
+            lblTitulo.Padding = new Padding(25, 0, 0, 0);
+            lblTitulo.Size = new Size(984, 90);
+            lblTitulo.TabIndex = 14;
+            lblTitulo.Text = "Recuperar contraseña";
+            // 
             // frmRecuperarContrasena
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(984, 611);
+            Controls.Add(lblTitulo);
             Controls.Add(btnVolver);
             Controls.Add(lblError);
             Controls.Add(btnGuardar);
@@ -194,7 +208,9 @@
             Controls.Add(lblUsuario);
             Controls.Add(lblEstadoProceso);
             Icon = (Icon)resources.GetObject("$this.Icon");
+            MinimumSize = new Size(900, 600);
             Name = "frmRecuperarContrasena";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Torneos Liga - Recuperar Contraseña";
             Load += frmRecuperarContrasena_Load;
             ResumeLayout(false);
@@ -217,5 +233,6 @@
         private Button btnGuardar;
         private Label lblError;
         private Button btnVolver;
+        private Label lblTitulo;
     }
 }

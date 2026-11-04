@@ -13,16 +13,99 @@ namespace Proyecto_Formulario
 {
     public partial class frmRegistrarUsuario : Form
     {
+        #region Inicialización y configuración de la interfaz
+
+        // Inicializar los controles del formulario
         public frmRegistrarUsuario()
         {
             InitializeComponent();
         }
+
+        // Distribuir y dimensionar los controles del formulario
+        private void ConfigurarInterfaz()
+        {
+            this.Size = new Size(1000, 650);
+            this.MinimumSize = new Size(1000, 650);
+            this.StartPosition = FormStartPosition.CenterScreen;
+
+            // Configurar el encabezado del formulario
+            lblTitulo.Text = "Torneos Liga  |  Registrar usuario";
+            EstiloUI.EstilizarEncabezado(lblTitulo);
+            lblTitulo.Font = new Font("Segoe UI", 24, FontStyle.Bold);
+            lblTitulo.ForeColor = Color.White;
+
+            // Configurar las etiquetas del formulario
+            ConfigurarEtiqueta(lblNombre, 80, 155, 350);
+            ConfigurarEtiqueta(lblApellido, 80, 255, 350);
+            ConfigurarEtiqueta(lblDni, 80, 355, 350);
+            ConfigurarEtiqueta(lblTelefono, 80, 455, 350);
+
+            ConfigurarEtiqueta(lblEmail, 550, 155, 350);
+            ConfigurarEtiqueta(lblGenero, 550, 255, 350);
+            ConfigurarEtiqueta(lblTipoUsuario, 550, 355, 350);
+            ConfigurarEtiqueta(lblFechaNacimiento, 550, 455, 350);
+
+            // Configurar los campos de entrada
+            ConfigurarCampo(txtNombre, 80, 188, 350, 42);
+            ConfigurarCampo(txtApellido, 80, 288, 350, 42);
+            ConfigurarCampo(txtDni, 80, 388, 350, 42);
+            ConfigurarCampo(txtTelefono, 80, 488, 350, 42);
+
+            ConfigurarCampo(txtEmail, 550, 188, 350, 42);
+            ConfigurarCampo(cboGenero, 550, 288, 350, 42);
+            ConfigurarCampo(cboTipoUsuario, 550, 388, 350, 42);
+            ConfigurarCampo(dtpFechaNacimiento, 550, 488, 350, 42);
+
+            // Configurar los botones del formulario
+            btnRegistrar.Size = new Size(150, 45);
+            btnRegistrar.Location = new Point(715, 565);
+
+            btnVolver.Size = new Size(90, 45);
+            btnVolver.Location = new Point(880, 565);
+
+            btnRegistrar.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnVolver.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+
+            // Configurar el mensaje de error
+            lblError.Location = new Point(80, 565);
+            lblError.Size = new Size(600, 35);
+            lblError.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        }
+
+        // Configurar la posición y el estilo de una etiqueta
+        private void ConfigurarEtiqueta(Label etiqueta, int x, int y, int ancho)
+        {
+            etiqueta.Location = new Point(x, y);
+            etiqueta.Size = new Size(ancho, 28);
+            etiqueta.Font = new Font("Segoe UI", 15);
+            etiqueta.TextAlign = ContentAlignment.MiddleLeft;
+            etiqueta.AutoSize = false;
+        }
+
+        // Configurar la posición y el tamaño de un campo
+        private void ConfigurarCampo(Control campo, int x, int y, int ancho, int alto)
+        {
+            campo.Location = new Point(x, y);
+            campo.Size = new Size(ancho, alto);
+            campo.Font = new Font("Segoe UI", 16);
+            campo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+
+            if (campo is TextBox txt)
+            {
+                txt.AutoSize = false;
+            }
+        }
+
+        #endregion
+
+        #region Inicialización del registro
 
         private void cboGenero_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
+        // Configurar los controles y los límites de los campos
         private void frmRegistrarUsuario_Load(object sender, EventArgs e)
         {
             EstiloUI.AplicarBaseFormulario(this);
@@ -43,9 +126,26 @@ namespace Proyecto_Formulario
             cboTipoUsuario.Items.Clear();
             cboTipoUsuario.Items.AddRange(new string[] { "Administrador", "General" });
 
+            dtpFechaNacimiento.ShowCheckBox = true;
+            dtpFechaNacimiento.Checked = false;
+
             lblError.Text = "";
+
+            txtNombre.MaxLength = 50;
+            txtApellido.MaxLength = 50;
+            txtDni.MaxLength = 8;
+            txtTelefono.MaxLength = 10;
+            txtEmail.MaxLength = 100;
+
+
+            ConfigurarInterfaz();
         }
 
+        #endregion
+
+        #region Generación de credenciales
+
+        // Generar un nombre de usuario único a partir de los datos personales
         private string GenerarNombreUsuario(string nombre, string apellido, string dni)
         {
             string inicial = nombre.Substring(0, 1).ToLower();
@@ -65,6 +165,7 @@ namespace Proyecto_Formulario
             return usuarioFinal;
         }
 
+        // Comprobar si el nombre de usuario ya está registrado
         private bool ExisteUsuarioEnBD(string usuario)
         {
             string query = "SELECT COUNT(*) FROM Usuarios WHERE Usuario = @Usuario";
@@ -87,6 +188,7 @@ namespace Proyecto_Formulario
             }
         }
 
+        // Generar una contraseña aleatoria para el nuevo usuario
         private string GenerarContrasenaAleatoria()
         {
             const string caracteresPermitidos = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -102,6 +204,11 @@ namespace Proyecto_Formulario
             return new string(contrasena);
         }
 
+        #endregion
+
+        #region Validación y registro de usuarios
+
+        // Validar los datos y registrar el nuevo usuario
         private void btnRegistrar_Click(object sender, EventArgs e)
         {
             lblError.Text = "";
@@ -112,7 +219,7 @@ namespace Proyecto_Formulario
             string telefono = txtTelefono.Text.Trim();
             string email = txtEmail.Text.Trim();
 
-            // Campos obligatorios
+            // Verificar los campos obligatorios
             if (string.IsNullOrEmpty(nombre) || string.IsNullOrEmpty(apellido) ||
                 string.IsNullOrEmpty(dni) || string.IsNullOrEmpty(telefono) ||
                 string.IsNullOrEmpty(email) || cboGenero.SelectedItem == null ||
@@ -158,22 +265,28 @@ namespace Proyecto_Formulario
                 return;
             }
 
+            if (!dtpFechaNacimiento.Checked)
+            {
+                lblError.Text = "Debe seleccionar una fecha de nacimiento.";
+                return;
+            }
+
             if (dtpFechaNacimiento.Value.Date > DateTime.Now.Date)
             {
                 lblError.Text = "La fecha de nacimiento no puede ser futura.";
                 return;
             }
 
-            // Todo válido: generamos usuario y contraseña
+            // Generar las credenciales después de validar los datos
             string nuevoUsuario = GenerarNombreUsuario(nombre, apellido, dni);
             string nuevaContrasena = GenerarContrasenaAleatoria();
-            string tipoUsuario = cboTipoUsuario.SelectedItem.ToString();
-            string genero = cboGenero.SelectedItem.ToString();
+            string tipoUsuario = cboTipoUsuario.SelectedItem?.ToString() ?? string.Empty;
+            string genero = cboGenero.SelectedItem?.ToString() ?? string.Empty;
 
             string insertQuery = @"INSERT INTO Usuarios 
-                (Usuario, Contrasena, Rol, PrimerIngreso, Nombre, Apellido, Dni, Telefono, Email, Genero) 
+                (Usuario, Contrasena, Rol, PrimerIngreso, Nombre, Apellido, Dni, Telefono, Email, Genero, FechaNacimiento) 
                 VALUES 
-                (@Usuario, @Contrasena, @Rol, 1, @Nombre, @Apellido, @Dni, @Telefono, @Email, @Genero)";
+                (@Usuario, @Contrasena, @Rol, 1, @Nombre, @Apellido, @Dni, @Telefono, @Email, @Genero, @FechaNacimiento)";
 
             try
             {
@@ -191,6 +304,7 @@ namespace Proyecto_Formulario
                         cmd.Parameters.AddWithValue("@Telefono", telefono);
                         cmd.Parameters.AddWithValue("@Email", email);
                         cmd.Parameters.AddWithValue("@Genero", genero);
+                        cmd.Parameters.AddWithValue("@FechaNacimiento", dtpFechaNacimiento.Value.Date);
 
                         cmd.ExecuteNonQuery();
                     }
@@ -218,7 +332,7 @@ namespace Proyecto_Formulario
         }
 
 
-        // validar DNI duplicado en SQL
+        // Comprobar si el DNI ya está registrado en SQL Server
         private bool ExisteDniEnBD(string dni)
         {
             string query = "SELECT COUNT(*) FROM Usuarios WHERE Dni = @Dni";
@@ -241,6 +355,7 @@ namespace Proyecto_Formulario
             }
         }
 
+        // Restablecer los campos después del registro
         private void LimpiarFormulario()
         {
             txtNombre.Text = "";
@@ -252,12 +367,20 @@ namespace Proyecto_Formulario
             cboTipoUsuario.SelectedIndex = -1;
             dtpFechaNacimiento.Value = DateTime.Now;
             lblError.Text = "";
+            dtpFechaNacimiento.Checked = false;
         }
 
+        #endregion
+
+        #region Navegación del formulario
+
+        // Volver al panel de administración
         private void btnVolver_Click(object sender, EventArgs e)
         {
             frmPrincipalAdmin frm = new frmPrincipalAdmin();
-            frm.Show();
+
+            Program.MostrarFormulario(frm);
+
             this.Close();
         }
 
@@ -265,5 +388,7 @@ namespace Proyecto_Formulario
         {
 
         }
+        #endregion
+
     }
 }

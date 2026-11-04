@@ -13,12 +13,15 @@ namespace Proyecto_Formulario
 {
     public partial class frmEditarPerfil : Form
     {
-        private int indiceUsuarioActual = -1;
+        #region Inicialización y carga del perfil
+
+        // Inicializar los controles del formulario
         public frmEditarPerfil()
         {
             InitializeComponent();
         }
 
+        // Configurar la interfaz y cargar los datos del usuario actual
         private void frmEditarPerfil_Load(object sender, EventArgs e)
         {
             EstiloUI.AplicarBaseFormulario(this);
@@ -44,8 +47,8 @@ namespace Proyecto_Formulario
             cboTipoUsuario.Items.Clear();
             cboTipoUsuario.Items.AddRange(new string[] { "Administrador", "General" });
 
-            // Precarga de datos desde SQL Server usando usuarioActual
-            string query = "SELECT Nombre, Apellido, Dni, Telefono, Email, Genero, Rol FROM Usuarios WHERE Usuario = @Usuario";
+            // Precargar los datos del usuario actual desde SQL Server
+            string query = "SELECT Nombre, Apellido, Dni, Telefono, Email, Genero, Rol, FechaNacimiento FROM Usuarios WHERE Usuario = @Usuario";
 
             try
             {
@@ -67,6 +70,10 @@ namespace Proyecto_Formulario
                                 txtEmail.Text = reader["Email"].ToString();
                                 cboGenero.SelectedItem = reader["Genero"].ToString();
                                 cboTipoUsuario.SelectedItem = reader["Rol"].ToString();
+                                if (reader["FechaNacimiento"] != DBNull.Value)
+                                {
+                                    dtpFechaNacimiento.Value = Convert.ToDateTime(reader["FechaNacimiento"]);
+                                }
                             }
                             else
                             {
@@ -87,11 +94,16 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            // DNI y Tipo de usuario nunca son editables sobre el perfio propio (tabla 4.6 de la consigna)
+            // Mantener el DNI y el tipo de usuario sin posibilidad de edición según la consigna
             txtDni.Enabled = false;
             cboTipoUsuario.Enabled = false;
         }
 
+        #endregion
+
+        #region Validación y guardado de cambios
+
+        // Validar y actualizar los datos personales del usuario
         private void btnGuardarCambios_Click(object sender, EventArgs e)
         {
             lblError.Text = "";
@@ -139,10 +151,10 @@ namespace Proyecto_Formulario
                 return;
             }
 
-            // Actualización de datos personales en SQL Server
-            string genero = cboGenero.SelectedItem.ToString();
+            // Actualizar los datos personales del usuario en SQL Server
+            string genero = cboGenero.SelectedItem?.ToString() ?? string.Empty;
             string updateQuery = @"UPDATE Usuarios 
-                                 SET Nombre = @Nombre, Apellido = @Apellido, Telefono = @Telefono, Email = @Email, Genero = @Genero 
+                                 SET Nombre = @Nombre, Apellido = @Apellido, Telefono = @Telefono, Email = @Email, Genero = @Genero, FechaNacimiento = @FechaNacimiento
                                  WHERE Usuario = @Usuario";
 
             try
@@ -158,6 +170,7 @@ namespace Proyecto_Formulario
                         cmd.Parameters.AddWithValue("@Email", email);
                         cmd.Parameters.AddWithValue("@Genero", genero);
                         cmd.Parameters.AddWithValue("@Usuario", DatosGlobales.usuarioActual);
+                        cmd.Parameters.AddWithValue("@FechaNacimiento", dtpFechaNacimiento.Value.Date);
 
                         cmd.ExecuteNonQuery();
                     }
@@ -173,27 +186,37 @@ namespace Proyecto_Formulario
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        #endregion
+
+        #region Navegación del perfil
+
+        // Abrir el proceso de recuperación de contraseña
         private void btnCambiarContraseña_Click(object sender, EventArgs e)
         {
-            frmRecuperarContrasena frm = new frmRecuperarContrasena();
-            frm.Show();
-            this.Close();
+            frmRecuperarContrasena frm = new frmRecuperarContrasena(this);
+
+            Program.MostrarFormulario(frm);
+
+            this.Hide();
         }
 
+        // Volver al panel correspondiente según el rol del usuario
         private void btnVolver_Click(object sender, EventArgs e)
         {
             if (DatosGlobales.rolActual == "Administrador")
             {
                 frmPrincipalAdmin frm = new frmPrincipalAdmin();
-                frm.Show();
+                Program.MostrarFormulario(frm);
             }
             else
             {
                 frmPrincipalGeneral frm = new frmPrincipalGeneral();
-                frm.Show();
+                Program.MostrarFormulario(frm);
             }
 
             this.Close();
         }
+        #endregion
+
     }
 }

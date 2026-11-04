@@ -1,39 +1,65 @@
-===================================================
-PROYECTO: Sistema de Gestión de Torneos 
-===================================================
+================================================================= PROYECTO: Sistema de
+Gestión de Torneos ===================================================
 
-REQUISITOS PREVIOS:
-- Microsoft Visual Studio 2022 (.NET Framework C# WinForms)
-- Microsoft SQL Server 
+REQUISITOS PREVIOS: - Windows - Microsoft Visual Studio 2022 - .NET 8
+SDK - SQL Server - SQL Server Management Studio (SSMS)
 
----------------------------------------------------
-PASOS PARA EJECUTAR EL PROYECTO Y LA BASE DE DATOS:
----------------------------------------------------
+  -----------------------------------------
+  PASOS PARA CONFIGURAR LA BASE DE DATOS:
+  -----------------------------------------
 
-1. CREACIÓN DE LA BASE DE DATOS Y DATOS DE PRUEBA:
-   - Abrir SQL Server Management Studio.
-   - Abrir el archivo "BD_Proyecto.sql" incluido en la raíz de este proyecto.
-   - Ejecutar todo el script (F5). Esto creará la base de datos "BD_Proyecto", 
-     sus tablas (Equipos, Jugadores, Usuarios) y los datos de prueba predeterminados.
+1.  CREACIÓN DE LA BASE DE DATOS:
+    -   Abrir SQL Server Management Studio.
+    -   Abrir el archivo “BD_Proyecto.sql”, ubicado en la raíz del
+        proyecto.
+    -   Ejecutar el script (F5).
+    -   El script crea la base de datos “BD_Proyecto” y las tablas:
+        Equipos, Jugadores y Usuarios.
+    -   Ejecutar este script solamente cuando la base de datos todavía
+        no exista.
+    -   El script de creación no debe ejecutarse nuevamente sobre una
+        base ya creada.
+2.  CONFIGURACIÓN DE LA CADENA DE CONEXIÓN:
+    -   Abrir la solución en Visual Studio.
 
-2. CONFIGURACIÓN DE LA CADENA DE CONEXIÓN:
-   - Abrir la solución en Visual Studio.
-   - En la clase "Conexion.cs", la cadena de conexión viene configurada como:
-     Server=CYNTHIA\SQLEXPRESS; Database=BD_Proyecto; Integrated Security=True; TrustServerCertificate=True;
-   - Como su instancia local de SQL Server tiene un nombre diferente, por favor 
-     ajuste únicamente el parámetro "Server" en dicho archivo por el nombre de su servidor 
-     (por ejemplo: Server=.\SQLEXPRESS o Server=localhost).
-   - Ajustar el parámetro "Server" con el nombre de su instancia local de SQL Server si es necesario.
+    -   Abrir la clase “Conexion.cs”, ubicada en la carpeta “Datos”.
 
-3. DATOS DE INGRESO (USUARIOS DE PRUEBA):
-   - Usuario: admin001
-   - Contraseña: admin123
-   - Rol: Admin
+    -   La cadena de conexión incluida actualmente es:
 
------------------------------------------------------
-INTEGRANTES:
-- Cynthia Aguero
-- Agustina Espinoza
-- Zoe Avellaneda
-- Luna Delgado
+        Server=.; Database=BD_Proyecto; Integrated Security=True;
+        TrustServerCertificate=True;
+
+    -   El valor “Server=.” hace referencia a la instancia
+        predeterminada de SQL Server instalada en el mismo equipo donde
+        se ejecuta la aplicación.
+
+    -   El nombre del servidor o de la instancia depende de la
+        instalación local de SQL Server.
+
+    -   Si el equipo utiliza una instancia con nombre, reemplazar
+        únicamente el valor de “Server” por el nombre correspondiente.
+        Por ejemplo:
+
+        Server=.;
+
+    -   También puede utilizarse el nombre del servidor y la instancia
+        que muestra SSMS al conectarse. No modificar los demás
+        parámetros de la cadena de conexión.
+3.  DATOS DE PRUEBA:
+    -   Los scripts SQL incluidos crean la estructura de la base de
+        datos, pero no insertan usuarios ni otros registros de prueba.
+    -   Para iniciar sesión, debe existir previamente un usuario
+        registrado en la tabla “Usuarios”.
+    -   Si se proporcionan credenciales de prueba por separado,
+        utilizarlas según los datos indicados por el equipo de
+        desarrollo.
+
+=====================================================
+
+INTEGRANTES: 
+- Cynthia Aguero 
+- Agustina Espinoza 
+- Zoe Avellaneda 
+-Luna Delgado 
+
 =====================================================
